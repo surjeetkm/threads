@@ -1,7 +1,7 @@
 package pc;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 class Pro implements Runnable{
 	private BlockingQueue<Integer> queue;
@@ -15,7 +15,7 @@ class Pro implements Runnable{
 	public void producer() {
 		while(true) {
 			try {
-				for(int i=1;i<1000;i++) {
+				for(int i=1;i<100;i++) {
 					queue.put(i);
 					System.out.println("Producer:"+i);
 					Thread.sleep(1000);
@@ -52,20 +52,19 @@ class Cons implements Runnable{
 }
 public class BlockingQueuePC {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		// TODO Auto-generated method stub
 		int numProducers = 4;
         int numConsumers = 3;
         
-		BlockingQueue<Integer> queue=new LinkedBlockingQueue<Integer>(1);
+		BlockingQueue<Integer> queue=new ArrayBlockingQueue<Integer>(10);
 		Thread t1=new Thread(new Pro(queue));
-		Thread t2=new Thread(new Cons(queue));
-		for (int i = 0; i < numProducers; i++) {
-			new Thread(new Pro(queue)).start();;
+		for(int i=0;i<3;i++) {
+		new Thread(new Cons(queue)).start();;
 		}
-		for (int i = 0; i < numConsumers; i++) {
-			new Thread(new Cons(queue)).start();;
-		}
+		t1.start();
+		//t2.start();
+		
 	}
 
 }
