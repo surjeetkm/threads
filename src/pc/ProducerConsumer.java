@@ -3,100 +3,69 @@ package pc;
 import java.util.*;
 
 class Producer implements Runnable {
-
-	private LinkedList<Integer> list;
-	private static final int SIZE = 10;
+	private LinkedList<Integer> queue;
+	private static final int MAX = 20;
 	private int value = 1;
 
-	public Producer(LinkedList list) {
-		this.list = list;
+	public Producer(LinkedList queue) {
+		this.queue = queue;
 	}
 
 	@Override
 	public void run() {
-		try {
-			producer();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		produce();
 	}
 
-	public void producer() throws InterruptedException {
-		int value = 0; 
-        while (true) 
-        { 
-            synchronized (this) 
-            { 
-                // producer thread waits while list 
-                // is full 
-                while (list.size()==SIZE) 
-                    list.wait(); 
-
-                System.out.println("Producer produced-"
-                                              + value); 
-
-                // to insert the jobs in the list 
-                list.add(value++); 
-
-                // notifies the consumer thread that 
-                // now it can start consuming 
-                notify(); 
-
-                // makes the working of program easier 
-                // to  understand 
-                Thread.sleep(1000); 
-            } 
-        } 
+	private void produce() {
+		synchronized (queue) {
+			while (value != MAX) {
+				try {
+					if (queue.size() == 5) {
+						System.out.println("Waiting::");
+						queue.wait();
+					}
+					queue.add(value);
+					Thread.sleep(500);
+					System.out.println("Producer:" + value);
+					value = value + 1;
+					queue.notify();
+				} catch (Exception e) {
+				}
+			}
+		}
 	}
 
 }
 
 class Consumer implements Runnable {
+	private LinkedList<Integer> queue;
 
-	private LinkedList<Integer> list;
-	private static final int SIZE = 10;
-	private int value = 1;
-
-	public Consumer(LinkedList list) {
-		this.list = list;
+	public Consumer(LinkedList queue) {
+		this.queue = queue;
 	}
 
 	@Override
 	public void run() {
-		try {
-			consumer();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		consume();
+	}
+
+	private void consume() {
+		synchronized (queue) {
+			while (true) {
+				try {
+					if (queue.isEmpty())
+						queue.wait();
+					int value = queue.removeFirst();
+					System.out.println("Consumer:" + value);
+					Thread.sleep(500);
+					queue.notify();
+				} catch (Exception e) {
+
+				}
+			}
 		}
+
 	}
-
-	public void consumer() throws InterruptedException {
-		while (true) 
-        { 
-            synchronized (this) 
-            { 
-                // consumer thread waits while list 
-                // is empty 
-                while (list.size()==0) 
-                    list.wait(); 
-
-                //to retrive the ifrst job in the list 
-                int val = list.removeFirst(); 
-
-                System.out.println("Consumer consumed-"
-                                                + val); 
-
-                // Wake up producer thread 
-                notify(); 
-
-                // and sleep 
-                Thread.sleep(1000); 
-            } 
-        } 
-	}
-
 }
 
 public class ProducerConsumer {
